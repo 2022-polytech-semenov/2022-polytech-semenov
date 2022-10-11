@@ -1,9 +1,8 @@
 #include <iostream>
-#include <cstdlib> 
+#include <func.h>
 using namespace std;
-
-int main() 
-{ 
-    cout << "Hello, world!" << endl;
-    return 0; 
+int main()
+{
+    printf("Hello world")
+        return 0;
 }
