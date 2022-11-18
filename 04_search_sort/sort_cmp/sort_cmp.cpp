@@ -1,131 +1,104 @@
-#include <random>
-#include <iostream>
 #include <chrono>
-#include <Windows.h>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <random>
 
+void fill_array_random(int arr[], int n, int a, int b);
+void selection_sort(int arr[], int n);
+void quick_sort(int arr[], int lo, int hi);
+int partition(int arr[], int lo, int hi);
+int* swap(int arr[], int what, int with);
 
-using namespace std;
+int main() {
+    long long int help[] = {
+      10,
+      100,
+      1000,
+      1000000, // dead point
+      1000000000,
+      1000000000000
+    };
 
+    for (int i = 0; i != 5; ++i) {
 
-void fill_array_random(int arr[], int n, int a, int b)
-{
-    random_device dev;
-    mt19937 rng(dev());
-    uniform_int_distribution<mt19937::result_type> dist(a, b);
+        auto n = help[i];
 
-    for (int i = 0; i < n; ++i)
-    {
+        int arr1[n], arr2[n];
+
+        fill_array_random(arr1, n, 0, 10000);
+        memcpy(arr2, arr1, n * sizeof(int));
+
+        auto t1 = std::chrono::high_resolution_clock::now();
+        selection_sort(arr1, n);
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> ss_ms = t2 - t1;
+
+        t1 = std::chrono::high_resolution_clock::now();
+        quick_sort(arr2, 0, n - 1);
+        t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> qs_ms = t2 - t1;
+
+        std::printf("%.0e: %.5f (ss), %.5f (qs)\n",
+            static_cast<double>(n),
+            ss_ms.count(),
+            qs_ms.count());
+    }
+    return 0;
+}
+
+void fill_array_random(int arr[], int n, int a, int b) {
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(a, b);
+
+    for (int i = 0; i < n; ++i) {
         arr[i] = dist(rng);
     }
 }
 
-
-void swap(int arr[], int idx_a, int idx_b)
-{
-    int temp = arr[idx_a];
-    arr[idx_a] = arr[idx_b];
-    arr[idx_b] = temp;
-}
-
-
-void selection_sort(int arr[], int size)
-{
-    for (int i = 0; i < size - 1; i++)
-    {
-        int min_index = i;
-        for (int j = i + 1; j < size; j++)
-        {
-            if (arr[j] < arr[min_index])
-            {
-                min_index = j;
+void selection_sort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int jmin = i;
+        for (int j = i + 1; j < n; j++) {
+            if (arr[j] < arr[jmin]) {
+                jmin = j;
             }
         }
-        if (min_index != i)
-        {
-            swap(arr, i, min_index);
+        if (jmin != i) {
+            swap(arr, i, jmin);
         }
     }
 }
 
-
-int partition(int arr[], int start, int end)
-{
-
-    int pivot = arr[start];
-
-    int count = 0;
-    for (int i = start + 1; i <= end; i++) {
-        if (arr[i] <= pivot)
-            count++;
-    }
-
-    int pivotIndex = start + count;
-    swap(arr, pivotIndex, start);
-
-    int i = start, j = end;
-
-    while (i < pivotIndex && j > pivotIndex) {
-
-        while (arr[i] <= pivot) {
-            i++;
-        }
-
-        while (arr[j] > pivot) {
-            j--;
-        }
-
-        if (i < pivotIndex && j > pivotIndex) {
-            swap(arr, i, j);
-            i++;
-            j--;
-        }
-    }
-
-    return pivotIndex;
-}
-
-
-void quick_sort(int arr[], int start, int end)
-{
-    if (start >= end)
+void quick_sort(int arr[], int lo, int hi) {
+    if (lo >= hi || lo < 0) {
         return;
+    }
 
-    int p = partition(arr, start, end);
-    quick_sort(arr, start, p - 1);
-    quick_sort(arr, p + 1, end);
+    int p = partition(arr, lo, hi);
+    quick_sort(arr, lo, p - 1);
+    quick_sort(arr, p + 1, hi);
 }
 
-
-void main()
-{
-    while (true)
-    {
-        int size = 0;
-        char skip;
-        cout << "Enter array size" << endl;
-        cin >> size;
-        system("cls");
-        int* arr = new int[size];
-        fill_array_random(arr, size, 0, 100);
-        auto begin = chrono::steady_clock::now();
-        quick_sort(arr, 0, size - 1);
-        auto end = chrono::steady_clock::now();
-        auto elapsed_ms = chrono::duration_cast <chrono::nanoseconds> (end - begin);
-        fill_array_random(arr, size, 0, 100);
-        begin = chrono::steady_clock::now();
-        selection_sort(arr, size);
-        end = chrono::steady_clock::now();
-        auto elapsed_ms2 = chrono::duration_cast <chrono::nanoseconds> (end - begin);
-        cout << "Array size: " << size << endl << elapsed_ms2.count() * 0.000000001 << " (ss), "
-            << elapsed_ms.count() * 0.000000001 << " (qs)" << endl;
-        cout << "Type any character if you want to choose next array size" << endl
-            << "If you want to close the program type q" << endl;
-        cin >> skip;
-        if (skip == 'q')
-        {
-            break;
+int partition(int arr[], int lo, int hi) {
+    int pivot = arr[hi];
+    int i = lo - 1;
+    for (int j = lo; j <= hi - 1; ++j) {
+        if (arr[j] <= pivot) {
+            i++;
+            swap(arr, i, j);
         }
-        system("cls");
-        delete[] arr;
     }
+    i++;
+    swap(arr, i, hi);
+    return i;
+}
+
+int* swap(int arr[], int what, int with) {
+    int tmp = arr[what];
+    arr[what] = arr[with];
+    arr[with] = tmp;
+    return arr;
 }
