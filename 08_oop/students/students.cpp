@@ -1,45 +1,167 @@
-usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]
-           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
-           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]
-           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
-           [--super-prefix=<path>] [--config-env=<name>=<envvar>]
-           <command> [<args>]
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
 
-These are common Git commands used in various situations:
+using namespace std;
 
-start a working area (see also: git help tutorial)
-   clone     Clone a repository into a new directory
-   init      Create an empty Git repository or reinitialize an existing one
+bool CompareStudentsGrades(pair<int, int> a, pair<int, int> b)
+{
+	if (a.first >= b.first) {
+		return true;
+	}
 
-work on the current change (see also: git help everyday)
-   add       Add file contents to the index
-   mv        Move or rename a file, a directory, or a symlink
-   restore   Restore working tree files
-   rm        Remove files from the working tree and from the index
+	return false;
+}
 
-examine the history and state (see also: git help revisions)
-   bisect    Use binary search to find the commit that introduced a bug
-   diff      Show changes between commits, commit and working tree, etc
-   grep      Print lines matching a pattern
-   log       Show commit logs
-   show      Show various types of objects
-   status    Show the working tree status
 
-grow, mark and tweak your common history
-   branch    List, create, or delete branches
-   commit    Record changes to the repository
-   merge     Join two or more development histories together
-   rebase    Reapply commits on top of another base tip
-   reset     Reset current HEAD to the specified state
-   switch    Switch branches
-   tag       Create, list, delete or verify a tag object signed with GPG
+class Student {
+private:
+	string name;
+	int grade = 0;
 
-collaborate (see also: git help workflows)
-   fetch     Download objects and refs from another repository
-   pull      Fetch from and integrate with another repository or a local branch
-   push      Update remote refs along with associated objects
+public:
+	Student(string name) {
+		this->name = name;
+	}
 
-'git help -a' and 'git help -g' list available subcommands and some
-concept guides. See 'git help <command>' or 'git help <concept>'
-to read about a specific subcommand or concept.
-See 'git help git' for an overview of the system.
+	Student() {
+		this->name = "";
+		this->grade = 0;
+	}
+
+	string getName() {
+		return this->name;
+	}
+
+	int getGrade() {
+		return this->grade;
+	}
+
+	void setGrade(int grade) {
+		this->grade = grade;
+	}
+};
+
+class StudentList {
+private:
+	vector<Student*> studentList;
+
+	vector<Student*> getStudentsFromPairByIndex(vector<Student*> studentList, vector<pair<int, int>> gradeByIndex) {
+		vector<Student*> bottomGradeStudents;
+
+		for (auto i : gradeByIndex)
+		{
+			bottomGradeStudents.push_back(studentList.at(i.second));
+		}
+
+		return bottomGradeStudents;
+	}
+
+public:
+	StudentList() {
+	}
+
+	void addStudent(Student* student) {
+		studentList.push_back(student);
+	}
+
+
+	void removeStudent(const Student* student) {
+		studentList.erase(remove(studentList.begin(), studentList.end(), student), studentList.end());
+	}
+
+
+	void setGrade(Student* student, int grade) {
+		auto it = find(studentList.begin(), studentList.end(), student);
+		int index = it - studentList.begin();
+
+		Student* targetStudent = studentList.at(index);
+		targetStudent->setGrade(grade);
+	}
+
+
+	double getStudentsAverageGrade() {
+		int total = 0;
+
+		for (auto& student : studentList) {
+			total += student->getGrade();
+		}
+
+		return total / studentList.size();
+	}
+
+
+	vector<Student*> getTopStudents() {
+		vector<pair<int, int>> topStudentsGradeByIndex;
+
+		for (int i = 0; i < studentList.size() > 5 ? 5 : studentList.size(); ++i) {
+			if (studentList[i]->getGrade() < 4) {
+				continue;
+			}
+			topStudentsGradeByIndex.push_back({ studentList[i]->getGrade(), i });
+		}
+
+		sort(topStudentsGradeByIndex.begin(), topStudentsGradeByIndex.end(), CompareStudentsGrades);
+
+		return getStudentsFromPairByIndex(studentList, topStudentsGradeByIndex);
+	}
+
+	vector<Student*> getBottomStudents() {
+		vector<pair<int, int>> bottomStudentsGradeByIndex;
+
+		for (int i = 0; i < studentList.size() > 5 ? 5 : studentList.size(); ++i) {
+			if (studentList[i]->getGrade() > 3) {
+				continue;
+			}
+			bottomStudentsGradeByIndex.push_back({ studentList[i]->getGrade(), i });
+		}
+
+		sort(bottomStudentsGradeByIndex.begin(), bottomStudentsGradeByIndex.end(), CompareStudentsGrades);
+
+		return getStudentsFromPairByIndex(studentList, bottomStudentsGradeByIndex);
+	}
+
+
+	string printStudents() {
+		return printStudents(studentList);
+	}
+
+
+	string printStudents(vector<Student*> studentList) {
+		string studentsData = "";
+
+		for (auto& student : studentList) {
+			studentsData += ("Name: " + student->getName() + " | Grade: " + to_string(student->getGrade()) + "\n");
+		}
+
+		return studentsData;
+	}
+};
+
+int main()
+{
+	StudentList studentList = StudentList();
+
+	Student semenov = Student("Yuri Semenov");
+	studentList.addStudent(&semenov);
+	studentList.setGrade(&semenov, 5);
+
+	Student tsal = Student("Vitaly Tsal");
+	studentList.addStudent(&tsal);
+	studentList.setGrade(&tsal, 3);
+
+	//cout << semenov.getGrade();
+	//cout << tsal.getGrade();
+
+	//cout << studentList.getStudentsAverageGrade();
+
+	cout << studentList.printStudents() << endl;
+	cout << studentList.printStudents(studentList.getTopStudents()) << endl;
+	cout << studentList.printStudents(studentList.getBottomStudents()) << endl;
+
+	return 0;
+
+	//studentList.removeStudent(&semenov);
+	//studentList.removeStudent(&tsal);
+}
