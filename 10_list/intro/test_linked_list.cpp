@@ -1,45 +1,63 @@
-usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]
-           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
-           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]
-           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
-           [--super-prefix=<path>] [--config-env=<name>=<envvar>]
-           <command> [<args>]
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "linked_list.hpp"
+#include <doctest.h>
 
-These are common Git commands used in various situations:
+TEST_CASE("Elements can be inserted") {
+	LinkedList<int> ll{ 1, 2, 3, 4, 5 };
 
-start a working area (see also: git help tutorial)
-   clone     Clone a repository into a new directory
-   init      Create an empty Git repository or reinitialize an existing one
+	REQUIRE(ll.size() == 5);
 
-work on the current change (see also: git help everyday)
-   add       Add file contents to the index
-   mv        Move or rename a file, a directory, or a symlink
-   restore   Restore working tree files
-   rm        Remove files from the working tree and from the index
+	ll.insert(2, 9);
+	CHECK(ll == LinkedList{ 1, 2, 9, 3, 4, 5 });
 
-examine the history and state (see also: git help revisions)
-   bisect    Use binary search to find the commit that introduced a bug
-   diff      Show changes between commits, commit and working tree, etc
-   grep      Print lines matching a pattern
-   log       Show commit logs
-   show      Show various types of objects
-   status    Show the working tree status
+	ll.insert(0, 8);
+	CHECK(ll == LinkedList<int>{8, 1, 2, 9, 3, 4, 5});
 
-grow, mark and tweak your common history
-   branch    List, create, or delete branches
-   commit    Record changes to the repository
-   merge     Join two or more development histories together
-   rebase    Reapply commits on top of another base tip
-   reset     Reset current HEAD to the specified state
-   switch    Switch branches
-   tag       Create, list, delete or verify a tag object signed with GPG
+	ll.insert(7, 7);
+	CHECK(ll == LinkedList<int>{8, 1, 2, 9, 3, 4, 5, 7});
 
-collaborate (see also: git help workflows)
-   fetch     Download objects and refs from another repository
-   pull      Fetch from and integrate with another repository or a local branch
-   push      Update remote refs along with associated objects
+	REQUIRE(ll.size() == 8);
+}
 
-'git help -a' and 'git help -g' list available subcommands and some
-concept guides. See 'git help <command>' or 'git help <concept>'
-to read about a specific subcommand or concept.
-See 'git help git' for an overview of the system.
+TEST_CASE("Elements can be removed") {
+	LinkedList<int> ll{ 8, 1, 2, 9, 3, 4, 5, 7 };
+
+	ll.remove(3);
+	CHECK(ll == LinkedList<int>{8, 1, 2, 3, 4, 5, 7});
+
+	ll.remove(0);
+	CHECK(ll == LinkedList<int>{1, 2, 3, 4, 5, 7});
+
+	ll.remove(5);
+	CHECK(ll == LinkedList<int>{1, 2, 3, 4, 5});
+
+	REQUIRE(ll.size() == 5);
+}
+
+TEST_CASE("Deleting/pasting elements outside the array does nothing") {
+	LinkedList<int> ll{ 1, 2, 3, 4, 5 };
+
+	REQUIRE(ll.insert(99, 0) == false);
+	CHECK(ll == LinkedList{ 1, 2, 3, 4, 5 });
+
+	REQUIRE(ll.remove(99) == false);
+	CHECK(ll == LinkedList{ 1, 2, 3, 4, 5 });
+}
+
+TEST_CASE("Getting elements by index") {
+	LinkedList<int> ll{ 1, 2, 3, 4, 5 };
+
+	CHECK(ll.get(0)->data == 1);
+	CHECK(ll.get(2)->data == 3);
+	CHECK(ll.get(4)->data == 5);
+	CHECK(ll.get(99) == nullptr);
+}
+
+TEST_CASE("Deep copying") {
+	LinkedList<int> ll{ 1, 2, 3, 4, 5 };
+	LinkedList<int> ll_cloned;
+
+	ll.clone(&ll_cloned);
+
+	CHECK(ll == ll_cloned);
+}

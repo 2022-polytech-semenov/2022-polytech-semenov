@@ -1,45 +1,29 @@
-usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]
-           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
-           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]
-           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
-           [--super-prefix=<path>] [--config-env=<name>=<envvar>]
-           <command> [<args>]
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "reverse_ll.hpp"
+#include <deque>
+#include <doctest.h>
 
-These are common Git commands used in various situations:
+std::deque<int> ll_to_deque(Node** head) {
+    auto tmp = *head;
+    std::deque<int> out{};
+    while (tmp != nullptr) {
+        out.push_front(tmp->data);
+        tmp = tmp->next;
+    }
+    return out;
+}
 
-start a working area (see also: git help tutorial)
-   clone     Clone a repository into a new directory
-   init      Create an empty Git repository or reinitialize an existing one
+TEST_CASE("aa") {
+    std::deque<int> v1{ 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+    std::deque<int> v2{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    std::deque<int> v3{ 1, 2, 6, 5, 4, 3, 7, 8, 9 };
 
-work on the current change (see also: git help everyday)
-   add       Add file contents to the index
-   mv        Move or rename a file, a directory, or a symlink
-   restore   Restore working tree files
-   rm        Remove files from the working tree and from the index
+    Node* head = generate(9);
+    CHECK(v1 == ll_to_deque(&head));
 
-examine the history and state (see also: git help revisions)
-   bisect    Use binary search to find the commit that introduced a bug
-   diff      Show changes between commits, commit and working tree, etc
-   grep      Print lines matching a pattern
-   log       Show commit logs
-   show      Show various types of objects
-   status    Show the working tree status
+    reverse(&head);
+    CHECK(v2 == ll_to_deque(&head));
 
-grow, mark and tweak your common history
-   branch    List, create, or delete branches
-   commit    Record changes to the repository
-   merge     Join two or more development histories together
-   rebase    Reapply commits on top of another base tip
-   reset     Reset current HEAD to the specified state
-   switch    Switch branches
-   tag       Create, list, delete or verify a tag object signed with GPG
-
-collaborate (see also: git help workflows)
-   fetch     Download objects and refs from another repository
-   pull      Fetch from and integrate with another repository or a local branch
-   push      Update remote refs along with associated objects
-
-'git help -a' and 'git help -g' list available subcommands and some
-concept guides. See 'git help <command>' or 'git help <concept>'
-to read about a specific subcommand or concept.
-See 'git help git' for an overview of the system.
+    reverse(&head, 3, 6);
+    CHECK(v3 == ll_to_deque(&head));
+}
