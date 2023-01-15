@@ -1,103 +1,45 @@
 #include <cassert>
 #include <iostream>
-#include <string>
+#include <cstring>
 
-
-using namespace std;
-
-
-const char arr[] = "0123456789";
-
-
-int convert(const char* a)
-{
-    int res = 0;
-    for (int i = 0; i < strlen(a); i++)
-    {
-        for (int x = 0; x < 10; x++)
-        {
-            if (a[i] == arr[x])
-            {
-                res *= 10;
-                res += x;
-            }
-        }
-    }
-    if (a[0] == '-')
-    {
-        res *= -1;
-    }
-    return res;
+int length(const char* a) {
+    return (int)std::strlen(a);
 }
 
+const char* itos(int n) {
+    if (!n) return "0";
 
-const char* int_to_str(int a) 
-{
-    int arrn[10] = { 0,1,2,3,4,5,6,7,8,9 };
-    int i = 1;
-    int b = a;
-    while (b / 10 != 0) 
-    {
-        b /= 10;
-        i++;
-    }
-    char* result = new char[i + 2]; 
-    b = a;
-    if (a >= 0) 
-    {
-        for (int x = i - 1; x > -1; x--)
-        {
-            for (int z = 0; z < 10; z++)
-            {
-                if ((a % 10) == arrn[z])
-                {
-                    result[x] = arr[z];
-                    break;
-                }
-            }
-            a /= 10;
-            result[i] = '\0';
-        }
-    }
-    else 
-    {
-        a = b;
-        result[0] = '-';
-        a *= (-1);
-        for (int x = 1; x < i + 1; x++)
-        {
-            for (int z = 0; z < 10; z++)
-            {
-                if ((a % 10) == arrn[z])
-                {
-                    result[i - x + 1] = arr[z];
-                    break;
-                }
-            }
-            a /= 10;
-        }
-        result[i + 1] = '\0';
+    int m = n;
+    int numofdigits = 0;
+    while (m) {
+        numofdigits++;
+        m /= 10;
     }
 
-    return result;
+    char* arr;
+    arr = (char*)malloc(numofdigits + 1);
+    arr[numofdigits] = '\0';
+    while (n) {
+        arr[--numofdigits] = (char)(n % 10 + '0');
+        n /= 10;
+    }
+    return (const char*)arr;
 }
 
+const char* mul(const char* a, const char* b) {
+    int lena = length(a);
+    int lenb = length(b);
 
-int pre_mul(const char* a, const char* b) 
-{
-    int res = convert(a) * convert(b);
-    return res;
+    int aint = 0, bint = 0;
+    for (int i = lena - 1, mult = 1; i >= 0; i--, mult *= 10) aint += (a[i] - '0') * mult;
+    for (int i = lenb - 1, mult = 1; i >= 0; i--, mult *= 10) bint += (b[i] - '0') * mult;
+    return itos((aint * bint));
 }
 
-
-const char* mul(const char* a, const char* b) 
-{
-    return int_to_str(pre_mul(a, b));
-}
-
-
-int main()
-{
-    std::cout << mul("200", "-45") << endl;
+int main() {
+    assert(strcmp(mul("12", "13"), "156") == 0);
+    assert(strcmp(mul("2", "3"), "6") == 0);
+    assert(strcmp(mul("100", "100"), "10000") == 0);
+    assert(strcmp(mul("99", "99"), "9801") == 0);
     return 0;
 }
